@@ -52,7 +52,7 @@ GOAL = tuple(list(range(1, SIZE * SIZE)) + [0])  # 1,2,...,15,0
 
 
 # ---------------------------------------------------------------------------
-# ANSI colors & centering
+# ANSI colours & centring
 # ---------------------------------------------------------------------------
 
 RESET = "\033[0m"
@@ -512,14 +512,10 @@ def estimate_runtime_for_current_size():
         input("\nPress Enter to return to the menu...")
         return
 
-    # Step 2: effective branching factor implied by the benchmark.
     b = avg_nodes ** (1 / avg_depth) if avg_depth > 0 else 1.0
 
-    # Step 3: expected optimal solution depth at the current size, using
-    # the Theta(n^3) asymptotic growth in required moves.
     estimated_depth = avg_depth * (n / 4) ** 3
 
-    # Step 4: project nodes and time, in log10 space to avoid overflow.
     log10_nodes = estimated_depth * math.log10(b) if b > 0 else 0.0
     log10_time = log10_nodes + math.log10(time_per_node) if time_per_node > 0 else float("-inf")
 
@@ -538,6 +534,10 @@ def estimate_runtime_for_current_size():
     print(" a precise prediction.)")
     input("\nPress Enter to return to the menu...")
 
+
+# ---------------------------------------------------------------------------
+# Menu and Rendering
+# ---------------------------------------------------------------------------
 
 
 def clear_screen():
@@ -620,14 +620,12 @@ def read_single_key():
             finally:
                 termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
 
-    # Fallback: no raw-terminal support available.
     typed = input("Move (raw key mode unavailable here -- type then Enter): ").strip().lower()
     word_to_move = {"up": "Up", "down": "Down", "left": "Left", "right": "Right"}
     return word_to_move.get(typed, typed)
 
 
 def apply_move(state, move_name):
-    """Apply a move by name (used for manual play input)."""
     for neighbor, name in get_neighbors(state):
         if name == move_name:
             return neighbor
@@ -655,7 +653,7 @@ def watch_astar_solve():
     def on_progress(nodes_expanded, depth, done=False):
         now = time.time()
         if not done and now - last_draw[0] < 0.08:
-            return  # throttle redraws so they don't slow the search down
+            return
         last_draw[0] = now
         elapsed_so_far = now - start_time
         max_depth[0] = max(max_depth[0], depth)
@@ -668,8 +666,6 @@ def watch_astar_solve():
             colorize(f"Moves from start (current node): {depth}", "white", bold=True),
             colorize(f"Elapsed: {elapsed_so_far:.1f}s", "gray"),
         ]
-        # In-place redraw (not a full clear + repaint every frame) so
-        # frequent updates don't make the console visibly flash.
         redraw_live_block(lines, first_draw[0])
         first_draw[0] = False
 
@@ -702,8 +698,6 @@ def watch_astar_solve():
 
 
 def play_manually():
-    # Gentler than the A*-demo scramble (roughly half as many moves) since a
-    # human, not an algorithm, has to solve this one by hand.
     puzzle = generate_puzzle(num_shuffles=max(20, default_shuffle_count() // 2))
     move_count = 0
     message = None  # transient status line shown for one frame, then cleared
